@@ -1,0 +1,15 @@
+# Object File
+*.a
+*.o
+
+# Any file under folder "model", except Dict
+model/*
+!model/Dict
+
+# test code and program
+test*
+input_chs.*
+output_chs.*
+
+# docs
+doc/*
