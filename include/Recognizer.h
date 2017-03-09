@@ -10,30 +10,30 @@
 * It is provided "as is" without express or implied warranty.
 *********************************************************************/
 
-#ifndef SEGMENTOR_H_
-#define SEGMENTOR_H_
+#ifndef RECOGNIZER_H_
+#define RECOGNIZER_H_
 
 #include "Config.h"
 #include "StrFun.h"
 #include "CharType.h"
-#include "SegFeat.h"
-#include "SegProb.h"
-#include "SegDict.h"
+#include "NERFeat.h"
+#include "NERDict.h"
+#include "Probability.h"
 #include "MultiPerceptron.h"
 #include "NUSTM_CWSP.h"
 
 namespace nerp
 {
-    class Segmentor: public NUSTM_CWSP
+    class Recognizer: //public NUSTM_CWSP
     {
     public:
-        Segmentor();
-        ~Segmentor();
+        Recognizer();
+        ~Recognizer();
         bool Initialize(bool is_char_bin, string dictfile, string &featfile, string &probfile, string &mpfile);
         bool Initialize();
         // void SegSentence(string & inputSen, string & outputSen);
-        void SegSentence(vector<string> myCharVec, string & outputSen);
-        void SegFile(const char * inputfile, const char * outputfile);
+        void RecogSentence(vector<string> myCharVec, string & outputSen);
+        void RecogFile(const char * inputfile, const char * outputfile);
         // void SetAlpha(double & myAlpha);
     private:
         // bool CheckMerge(deque<int> & x, deque<int> & y);
@@ -48,9 +48,9 @@ namespace nerp
         void Tag2Word(vector<string> charVec, vector<string> tagVec, string &line);
         string GetTag(int index);
     private:
-        SegFeat *_features;
-        SegProb *_probs;
-        SegDict *_dict;
+        NERFeat *_features;
+        Probability *_probs;
+        NERDict *_dict;
         CharType *_char_type;
         MultiPerceptron *_mp;
 
