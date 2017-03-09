@@ -59,10 +59,10 @@ namespace nerp
         bool ReadBinaryFile(const char* FileName);
         // vector<string> SplitString(string terms_str, string spliting_tag);
     private:
-        Vocab *_unigram;
-        Vocab *_bigram;
-        Vocab *_trigram;
-        Vocab *_dict;
+        Vocabulary *_unigram;
+        Vocabulary *_bigram;
+        Vocabulary *_trigram;
+        Vocabulary *_dict;
         bool _modifiable;    // if _modifiable is "false", you cannot insert, load from file...
     };
 }
