@@ -1,5 +1,5 @@
 /********************************************************************
-* cwsp: Chinese Word Segmentation Toolkit used multi-perceptron.
+* nerp: Chinese Named Entity Recognition Toolkit used multi-perceptron.
 * Copyright (C) 2017 Shenghuan He
 * Contact: heshenghuan328@gmail.com
 
