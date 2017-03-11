@@ -22,12 +22,13 @@ namespace nerp
     class Probability
     {
     public:
+        Probability(int size);
         Probability();
         ~Probability();
         void InitProbCount(int tag);
         void TransProbCount(int s, int d);
-        void InitProbCount(string tag);
-        void TransProbCount(string s, string d);
+        // void InitProbCount(string tag);
+        // void TransProbCount(string s, string d);
         bool CalcAllProb();
 
         double GetInitProb(int tag);
@@ -41,9 +42,8 @@ namespace nerp
         bool ReadBinaryFile(const char *FileName);
     private:
         vector<double> *_init_prob;
-        vector< vector<double> > *_trans_prob;
-
-        map<string, int> *tag2index;
+        vector<vector<double> > *_trans_prob;
+        int _tagsetSize;
     };
 }
 
