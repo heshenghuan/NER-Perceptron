@@ -18,6 +18,7 @@
 #include "StrFun.h"
 #include "NERFeat.h"
 #include "NERDict.h"
+#include "Tagset.h"
 #include "Probability.h"
 #include "MultiPerceptron.h"
 
@@ -85,7 +86,7 @@ namespace nerp
         NERDict *_dict;
         Probability *_probs;
         CharType *_char_type;
-        map<string, int> *tag2index;
+        Tagset *tagset;
 
         bool is_dict_ready;
         bool is_char_ready;

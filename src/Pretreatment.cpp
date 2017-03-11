@@ -18,16 +18,16 @@ namespace nerp {
         _probs = new Probability;
         _dict = new NERDict;
         _char_type = new CharType;
-        tag2index = new map<string, int>;
+        tagset = new Tagset;
 
         is_dict_ready = false;
         is_char_ready = false;
         is_out_ready = false;
 
-        tag2index->insert(make_pair("B", 0));
-        tag2index->insert(make_pair("M", 1));
-        tag2index->insert(make_pair("E", 2));
-        tag2index->insert(make_pair("S", 3));
+        // tag2index->insert(make_pair("B", 0));
+        // tag2index->insert(make_pair("M", 1));
+        // tag2index->insert(make_pair("E", 2));
+        // tag2index->insert(make_pair("S", 3));
     }
 
     Pretreatment::~Pretreatment() {
