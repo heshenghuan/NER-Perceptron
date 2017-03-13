@@ -96,29 +96,29 @@ namespace nerp
     bool Probability::CalcAllProb()
     {
         double init_sum = 0.0;
-        vector<double> trans_sum (4, 0.0);
+        vector<double> trans_sum (_tagsetSize, 0.0);
 
-        for (int i=0; i<4; i++)
+        for (int i=0; i<_tagsetSize; i++)
         {
             init_sum += this->_init_prob->at(i);
-            for(int j=0;j<4;j++)
+            for(int j=0;j<_tagsetSize;j++)
                 trans_sum[i] += this->_trans_prob->at(i).at(j);
         }
 
-        for (int i=0;i<4;i++)
+        for (int i=0;i<_tagsetSize;i++)
         {
             this->_init_prob->at(i) /= init_sum;
-            for(int j=0;j<4;j++)
+            for(int j=0;j<_tagsetSize;j++)
                 this->_trans_prob->at(i).at(j) /= trans_sum[i];
         }
 
-        for (int i=0;i<4;i++)
+        for (int i=0;i<_tagsetSize;i++)
         {
             if (this->_init_prob->at(i) != 0.0)
                 this->_init_prob->at(i) = log(this->_init_prob->at(i));
             else 
                 this->_init_prob->at(i) = LogP_Zero;
-            for(int j=0;j<4;j++)
+            for(int j=0;j<_tagsetSize;j++)
             {
                 if (this->_trans_prob->at(i).at(j) != 0.0)
                     this->_trans_prob->at(i).at(j) = log(this->_trans_prob->at(i).at(j));
@@ -165,26 +165,26 @@ namespace nerp
 
     bool Probability::LoadProbFile(const char *FileName)
     {
-		FILE * ProbFile;
-		ProbFile = fopen(FileName, "rb");
-		if (!ProbFile)
-		{
+        FILE * ProbFile;
+        ProbFile = fopen(FileName, "rb");
+        if (!ProbFile)
+        {
             cerr << "\nProbability ERROR" << endl;
-			cerr << "Can not open the Probability info file: "<<FileName<<endl;
-			return false;
-		}
-		char headBuf[UNIGRAM_LEN_MAX];
-		fread(&headBuf, g_Header_Len, 1, ProbFile);
-		fclose(ProbFile);
-		string header = string(headBuf, g_Header_Len);
-		if (header == g_Model_Header)
-		{
-			return ReadBinaryFile(FileName);
-		}
-		else
-		{
-			return ReadFile(FileName);
-		}
+            cerr << "Can not open the Probability info file: "<<FileName<<endl;
+            return false;
+        }
+        char headBuf[UNIGRAM_LEN_MAX];
+        fread(&headBuf, g_Header_Len, 1, ProbFile);
+        fclose(ProbFile);
+        string header = string(headBuf, g_Header_Len);
+        if (header == g_Model_Header)
+        {
+            return ReadBinaryFile(FileName);
+        }
+        else
+        {
+            return ReadFile(FileName);
+        }
     }
 
     bool Probability::SaveProbFile()
@@ -206,9 +206,14 @@ namespace nerp
         ProbFile = fopen(FileName.c_str(), "w");
 
         // write init prob
-        string Header = "#InitProb\n"; 
+        string Header = "#Probability\n";
+        string tagsetSize = toString(_tagsetSize) + "\n";
         fwrite(Header.data(), Header.length(), 1, ProbFile);
-        for(int i=0;i<4;i++)
+        fwrite(tagsetSize.data(), tagsetSize.length(), 1, ProbFile);
+
+        Header = "#InitProb\n";
+        fwrite(Header.data(), Header.length(), 1, ProbFile);
+        for(int i=0;i<_tagsetSize;i++)
         {
             string prob;
             if (_init_prob->at(i) == LogP_Zero)
@@ -220,10 +225,10 @@ namespace nerp
 
         Header = "#TransProb\n";
         fwrite(Header.data(), Header.length(), 1, ProbFile);
-        for(int i=0;i<4;i++)
+        for(int i=0;i<_tagsetSize;i++)
         {
             string prob = "";
-            for(int j=0;j<4;j++)
+            for(int j=0;j<_tagsetSize;j++)
             {
                 if (_trans_prob->at(i).at(j) == LogP_Zero)
                     prob += "-Inf ";
@@ -239,35 +244,33 @@ namespace nerp
 
     bool Probability::ConvertToBinaryFile(const char* InputFileName, const char* OutputFileName)
     {
-		if (!ReadFile(InputFileName)) return false;
+        if (!ReadFile(InputFileName)) return false;
         std::cout<<"Load text Probability file finished."<<endl;
         FILE* bin_lm_file;
         bin_lm_file=fopen(OutputFileName,"wb");
         fwrite(g_Model_Header.data(), g_Header_Len, 1, bin_lm_file);
-        int initProbSzie = (int)this->_init_prob->size();
-        fwrite(&initProbSzie, sizeof(int), 1, bin_lm_file);
-        for(int i=0; i<4; i++)
-		{
-			fwrite(&this->_init_prob->at(i), sizeof(double), 1, bin_lm_file);
-		}
+        fwrite(&_tagsetSize, sizeof(int), 1, bin_lm_file);
 
-        int transProbSize = (int)this->_trans_prob->size();
-        fwrite(&transProbSize, sizeof(int), 1, bin_lm_file);
-		for(int i=0; i<4; i++)
-		{
-			for(int j=0; j<4; j++)
-			{
-				fwrite(&this->_trans_prob->at(i).at(j), sizeof(double), 1, bin_lm_file);
-			}
-		}
+        for(int i=0; i<_tagsetSize; i++)
+        {
+            fwrite(&this->_init_prob->at(i), sizeof(double), 1, bin_lm_file);
+        }
+
+        for(int i=0; i<_tagsetSize; i++)
+        {
+            for(int j=0; j<_tagsetSize; j++)
+            {
+                fwrite(&this->_trans_prob->at(i).at(j), sizeof(double), 1, bin_lm_file);
+            }
+        }
         fclose(bin_lm_file);
-		std::cout<<"Convert to binary file finished!"<<endl;
+        std::cout<<"Convert to binary file finished!"<<endl;
         return true;
     }
 
     bool Probability::ReadFile(const char *FileName)
     {
-		ifstream fin;
+        ifstream fin;
         fin.open(FileName);
         if( !fin.is_open() )
         {
@@ -279,30 +282,33 @@ namespace nerp
         string myTextLine;
         vector<string> tmp;
         delete this->_init_prob;
-		delete this->_trans_prob;
+        delete this->_trans_prob;
         this->_init_prob = new vector<double>;
-        this-> _trans_prob = new vector< vector<double> >;
+        this->_trans_prob = new vector< vector<double> >;
 
-        getline(fin, myTextLine);  // skip the first line
-        for(int i=0; i<4; i++)
+        getline(fin, myTextLine);  // skip header line
+        getline(fin, myTextLine);  // Read tagset size
+        _tagsetSize = fromString<int>(myTextLine);
+
+        getline(fin, myTextLine);  // skip header line
+        for(int i=0; i<_tagsetSize; i++)
         {
             getline(fin, myTextLine);
             TrimLine(myTextLine);
-			double prob;
-			if (myTextLine != "-Inf")
-			{
-				prob = fromString<double>(myTextLine);
-				this->_init_prob->push_back(prob);
-			}
-			else
-			{
-				this->_init_prob->push_back(LogP_Zero);
-			}
+            double prob;
+            if (myTextLine != "-Inf")
+            {
+                prob = fromString<double>(myTextLine);
+                this->_init_prob->push_back(prob);
+            }
+            else
+            {
+                this->_init_prob->push_back(LogP_Zero);
+            }
         }
 
-        getline(fin, myTextLine);
-        //int bigramSize = fromString<int>(myTextLine);
-        for(int i=0; i<4; i++)
+        getline(fin, myTextLine);  // skip header line
+        for(int i=0; i<_tagsetSize; i++)
         {
             getline(fin, myTextLine);
             TrimLine(myTextLine);
@@ -318,22 +324,7 @@ namespace nerp
                 else
                     probs.push_back(LogP_Zero);
             }
-            // tmp = SplitString(myTextLine, " ");
-			
-			// for(int j=0; j<4; j++)
-			// {
-			// 	if (tmp[j] != "-Inf")
-			// 	{
-			// 		double prob = fromString<double>(tmp[j]);
-			// 		probs.push_back(prob);
-			// 	}
-			// 	else
-			// 	{
-			// 		probs.push_back(LogP_Zero);
-			// 	}
-			// }
-            //int index = fromString<int>(tmp.back());
-			this->_trans_prob->push_back(probs);
+            this->_trans_prob->push_back(probs);
         }
         fin.close();
         return true;
@@ -341,7 +332,7 @@ namespace nerp
 
     bool Probability::ReadBinaryFile(const char *FileName)
     {
-		FILE * probFile;
+        FILE * probFile;
         probFile = fopen(FileName, "rb");
         if( !probFile )
         {
@@ -352,32 +343,30 @@ namespace nerp
         char headBuf[UNIGRAM_LEN_MAX];
         fread(&headBuf, g_Header_Len, 1, probFile);
         string header = string(headBuf, g_Header_Len);
-		delete this->_init_prob;
-		delete this->_trans_prob;
+        delete this->_init_prob;
+        delete this->_trans_prob;
         this->_init_prob = new vector<double>;
-        this-> _trans_prob = new vector< vector<double> >;
+        this->_trans_prob = new vector< vector<double> >;
 
-		int initProbSize, transProbSize;
-		fread(&initProbSize, sizeof(int), 1, probFile);
-		for(int i=0; i<4; i++)
-		{
-			double prob;
-			fread(&prob, sizeof(double), 1,probFile);
-			this->_init_prob->push_back(prob);
-		}
+        fread(&_tagsetSize, sizeof(int), 1, probFile);
+        for(int i=0; i<_tagsetSize; i++)
+        {
+            double prob;
+            fread(&prob, sizeof(double), 1,probFile);
+            this->_init_prob->push_back(prob);
+        }
 
-		fread(&transProbSize, sizeof(int), 1, probFile);
-		for(int i=0; i<4; i++)
-		{
-			vector<double> probs;
-			for(int j=0; j<4; j++)
-			{
-				double prob;
-				fread(&prob, sizeof(double), 1,probFile);
-				probs.push_back(prob);
-			}
-			this->_trans_prob->push_back(probs);
-		}
-		return true;
+        for(int i=0; i<_tagsetSize; i++)
+        {
+            vector<double> probs;
+            for(int j=0; j<_tagsetSize; j++)
+            {
+                double prob;
+                fread(&prob, sizeof(double), 1,probFile);
+                probs.push_back(prob);
+            }
+            this->_trans_prob->push_back(probs);
+        }
+        return true;
     }
 }
