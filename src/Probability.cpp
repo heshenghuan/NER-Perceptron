@@ -18,11 +18,11 @@ namespace nerp
     {
         _init_prob = new vector<double>;
         _trans_prob = new vector< vector<double> >;
-        _tagsetSize = size
+        _tagsetSize = size;
         for(int i=0; i<_tagsetSize; i++)
         {
             _init_prob->push_back(0.0);
-            vector<double> tmp (_tagsetSize, 0.0);
+            vector<double> tmp(_tagsetSize, 0.0);
             _trans_prob->push_back(tmp);
         }
 
@@ -36,13 +36,40 @@ namespace nerp
     {
         _init_prob = new vector<double>;
         _trans_prob = new vector< vector<double> >;
-        _tagsetSize = 0
+        _tagsetSize = 0;
     }
 
     Probability::~Probability()
     {   
         delete _init_prob;
         delete _trans_prob;
+    }
+
+    bool Probability::UpdateTagsetSize(int targetId)
+    {
+        int targetSize = targetId + 1;
+        if(targetSize <= _tagsetSize) return true;
+
+        for(int i=_tagsetSize;i<targetSize;i++)
+        {
+            _init_prob->push_back(0.0);
+        }
+
+        for(int i=0; i<_tagsetSize; i++)
+        {
+            for(int j=_tagsetSize;j<targetSize;j++)
+            {
+                _trans_prob->at(i).push_back(0.0);
+            }
+        }
+
+        for(int j=_tagsetSize;j<targetSize;j++)
+        {
+            vector<double> tmp(targetSize, 0.0);
+            _trans_prob->push_back(tmp);
+        }
+        _tagsetSize = targetSize;
+        return true;
     }
 
     void Probability::InitProbCount(int tag)
@@ -53,17 +80,23 @@ namespace nerp
             cerr << "Error: the init_prob point to NULL!"<<endl;
             return;
         }
-        if (tag < 0 || tag >= _tagsetSize)
+        // if (_tagsetSize <= 0)
+        // {
+        //     cerr << "\nProbability ERROR" << endl;
+        //     cerr << "Not given the tagset size!"<<endl;
+        //     return;
+        // }
+        if (tag < 0)
         {
             cerr << "\nProbability ERROR" << endl;
             cerr << "Given tag beyond the range of tagset size!"<<endl;
             return;
         }
-        if (_tagsetSize <= 0)
+        if(tag >= _tagsetSize)
         {
-            cerr << "\nProbability ERROR" << endl;
-            cerr << "Not given the tagset size!"<<endl;
-            return;
+            // cerr << "Updating tagset size! From " << _tagsetSize
+            //      << " to " << tag + 1<<"(init)"<<endl;
+            UpdateTagsetSize(tag);
         }
         (this->_init_prob->at(tag))++;
         return;
@@ -77,17 +110,24 @@ namespace nerp
             cerr << "Error: the trans_prob point to NULL!"<<endl;
             return;
         }
-        if (s < 0 || s >= _tagsetSize || d < 0|| d >= _tagsetSize)
+        // if (_tagsetSize <= 0)
+        // {
+        //     cerr << "\nProbability ERROR" << endl;
+        //     cerr << "Not given the tagset size!"<<endl;
+        //     return;
+        // }
+        if (s < 0 ||  d < 0)
         {
             cerr << "\nProbability ERROR" << endl;
             cerr << "Given tag beyond the range of 4-tag-system!"<<endl;
             return;
         }
-        if (_tagsetSize <= 0)
+        if(s >= _tagsetSize || d >= _tagsetSize)
         {
-            cerr << "\nProbability ERROR" << endl;
-            cerr << "Not given the tagset size!"<<endl;
-            return;
+            int tag = s >= d ? s:d;
+            // cerr << "Updating tagset size! From " << _tagsetSize
+            //      << " to " << tag + 1 <<"(trans)"<<endl;
+            UpdateTagsetSize(tag);
         }
         (this->_trans_prob->at(s).at(d))++;
         return;

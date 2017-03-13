@@ -40,6 +40,7 @@ namespace nerp
     private:
         bool ReadFile(const char *FileName);
         bool ReadBinaryFile(const char *FileName);
+        bool UpdateTagsetSize(int targetId);
     private:
         vector<double> *_init_prob;
         vector<vector<double> > *_trans_prob;
