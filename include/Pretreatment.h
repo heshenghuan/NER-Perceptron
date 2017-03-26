@@ -86,7 +86,7 @@ namespace nerp
         NERDict *_dict;
         Probability *_probs;
         CharType *_char_type;
-        Tagset *tagset;
+        Tagset *_tagset;
 
         bool is_dict_ready;
         bool is_char_ready;
