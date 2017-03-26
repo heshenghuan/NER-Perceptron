@@ -46,7 +46,7 @@ namespace nerp
             if(it != tag2index.end())
                 return (*it).second;
             else
-                return _ulUnKnow;
+                return Vocab_None;
         };
 
         //将序号转化为标注
@@ -79,10 +79,10 @@ namespace nerp
     private:
         int Insert(string tag)
         {
-            _TagsetSize++;
+            // _TagsetSize++;
             index2tag.insert(map<int, string>::value_type(_TagsetSize, tag));
-			tag2index.insert(map<string, int>::value_type(tag, _TagsetSize));
-			return _TagsetSize;
+            tag2index.insert(map<string, int>::value_type(tag, _TagsetSize));
+            return _TagsetSize++;
         }
         int _TagsetSize;
         map<string, int> tag2index;
