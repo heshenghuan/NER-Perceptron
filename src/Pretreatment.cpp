@@ -18,7 +18,7 @@ namespace nerp {
         _probs = new Probability;
         _dict = new NERDict;
         _char_type = new CharType;
-        tagset = new Tagset;
+        _tagset = new Tagset;
 
         is_dict_ready = false;
         is_char_ready = false;
@@ -35,7 +35,7 @@ namespace nerp {
         delete _probs;
         delete _dict;
         delete _char_type;
-        delete tag2index;
+        delete _tagset;
     }
 
     bool Pretreatment::LoadDictFile(const char * DictFileName) {
@@ -117,11 +117,12 @@ namespace nerp {
             ReadSentence(fin, charVec, tagVec);
 
             // init tag prob
-            _probs->InitProbCount(tag2index->at(tagVec.at(2)));
+            // _probs->InitProbCount(tag2index->at(tagVec.at(2)));
+            _probs->InitProbCount(_tagset->GetAndInsertIndex(tagVec.at(2).c_str()));
             // trans tag prob
             for(size_t i=2; i<tagVec.size()-3; i++) {
-                int s = tag2index->at(tagVec.at(i));
-                int d = tag2index->at(tagVec.at(i+1));
+                int s = _tagset->GetAndInsertIndex(tagVec.at(i).c_str());
+                int d = _tagset->GetAndInsertIndex(tagVec.at(i+1).c_str());
                 _probs->TransProbCount(s, d);
             }
 
@@ -204,7 +205,7 @@ namespace nerp {
             vector<vector<string> > featsVec;
             Feature2vec(featurCont, featsVec);
             for (size_t i=0; i<featsVec.size(); i++) {
-                samp_class_vec.push_back(tag2index->at(tagVec.at(i+2)));
+                samp_class_vec.push_back(_tagset->GetAndInsertIndex(tagVec.at(i+2).c_str()));
                 feature samp_feat;
                 for (auto it : featsVec.at(i)) {
                     size_t feat_pos = it.find_first_of(":");
