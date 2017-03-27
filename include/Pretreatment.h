@@ -61,6 +61,17 @@ namespace nerp
             }
         }
 
+        bool LoadTagetFile(const char *TagsetFileName) {
+            if (_tagset->LoadTagsetFile(TagsetFileName)) {
+                is_tagset_ready = true;
+                return true;
+            }
+            else {
+                is_tagset_ready = false;
+                return false;
+            }
+        }
+
         void PrintInfo() {
             int unigramlen = _features->UnigramLen();
             int bigramlen = _features->BigramLen();
@@ -75,12 +86,17 @@ namespace nerp
             std::cout<< "Feature size:        "<<featSize<<endl;
         }
 
+        void Sampling(bool flag){
+            sampling = flag;
+        }
+
     private:
         // This function processes strings like "我 爱 北京 天安门 。"
         // void SplitLine(string &line, vector<string> &charVec, vector<string> &tagVec);
         void ReadSentence(ifstream &fin, vector<string> &charVec, vector<string> &tagVec);
         void GenerateFeats(vector<string> charVec, vector<vector<string> > &featsVec);
         void Feature2vec(vector<vector<string> > feats, vector<vector<string> > &featsVec);
+        void NegativeSampling(vector<int> tagIdVec, vector<int> &result);
     private:
         NERFeat *_features;
         NERDict *_dict;
@@ -91,6 +107,9 @@ namespace nerp
         bool is_dict_ready;
         bool is_char_ready;
         bool is_out_ready;
+        bool is_tagset_ready;
+
+        bool sampling;
     };
 }
 

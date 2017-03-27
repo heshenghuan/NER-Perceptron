@@ -23,6 +23,9 @@ namespace nerp {
         is_dict_ready = false;
         is_char_ready = false;
         is_out_ready = false;
+        is_tagset_ready = false;
+
+        sampling = false;
 
         // tag2index->insert(make_pair("B", 0));
         // tag2index->insert(make_pair("M", 1));
@@ -52,6 +55,7 @@ namespace nerp {
         if (!fin.is_open()) {
             cerr << "\nPretreatment ERROR" << endl;
             cerr << "On " << __FILE__ << ", line:" << __LINE__ << endl;
+            cerr << "Open corpus error!" << endl;
             return;
         }
         string myTextLine;
@@ -66,7 +70,7 @@ namespace nerp {
         getline(fin, myTextLine);
         TrimLine(myTextLine);
         while(!fin.eof() && myTextLine.size() > 0) {
-            vector<string> item = cwsp::string_split(myTextLine, " ");
+            vector<string> item = string_split(myTextLine, " ");
             charVec.push_back(item[0]);
             tagVec.push_back(item[1]);
             getline(fin, myTextLine);
@@ -91,10 +95,10 @@ namespace nerp {
             return false;
         }
 
-        if(!is_dict_ready || !is_char_ready) {
+        if(!is_dict_ready || !is_char_ready || !is_tagset_ready) {
             cerr << "\nPretreatment ERROR" << endl;
             cerr << "On " << __FILE__ << ", line:" << __LINE__ << endl;
-            cerr << "NERDict or CharType not ready for Training NERFile!" <<endl;
+            cerr << "NERDict, CharType or Tagset not ready for Training NERFile!" <<endl;
             return false;
         }
 
@@ -118,11 +122,11 @@ namespace nerp {
 
             // init tag prob
             // _probs->InitProbCount(tag2index->at(tagVec.at(2)));
-            _probs->InitProbCount(_tagset->GetAndInsertIndex(tagVec.at(2).c_str()));
+            _probs->InitProbCount(_tagset->GetIndex(tagVec.at(2).c_str()));
             // trans tag prob
             for(size_t i=2; i<tagVec.size()-3; i++) {
-                int s = _tagset->GetAndInsertIndex(tagVec.at(i).c_str());
-                int d = _tagset->GetAndInsertIndex(tagVec.at(i+1).c_str());
+                int s = _tagset->GetIndex(tagVec.at(i).c_str());
+                int d = _tagset->GetIndex(tagVec.at(i+1).c_str());
                 _probs->TransProbCount(s, d);
             }
 
@@ -173,13 +177,15 @@ namespace nerp {
         fin.open(corpus);
         if (!fin.is_open()) {
             cerr << "\nPretreatment ERROR" << endl;
+            cerr << "On " << __FILE__ << ", line:" << __LINE__ << endl;
             cerr << "Open " << corpus << " error!" << endl;
             return false;
         }
 
-        if(!is_dict_ready || !is_char_ready) {
+        if(!is_dict_ready || !is_char_ready || !is_tagset_ready) {
             cerr << "\nPretreatment ERROR" << endl;
-            cerr << "NERDict or CharType not ready for Training NERFile!" <<endl;
+            cerr << "On " << __FILE__ << ", line:" << __LINE__ << endl;
+            cerr << "NERDict, CharType or Tagset not ready for Training NERFile!" <<endl;
             return false;
         }
 
@@ -188,6 +194,7 @@ namespace nerp {
         getline(fin, myTextLine); // Read the number of sentences
         int Length = fromString<int>(myTextLine);
         int numIndex = 0;
+        int count = 0;
         vector<string> charVec, tagVec;
         while(numIndex < Length) {
             numIndex++;
@@ -204,26 +211,65 @@ namespace nerp {
             GenerateFeats(charVec, featurCont);
             vector<vector<string> > featsVec;
             Feature2vec(featurCont, featsVec);
-            for (size_t i=0; i<featsVec.size(); i++) {
-                samp_class_vec.push_back(_tagset->GetAndInsertIndex(tagVec.at(i+2).c_str()));
-                feature samp_feat;
-                for (auto it : featsVec.at(i)) {
-                    size_t feat_pos = it.find_first_of(":");
-                    int feat_id = atoi(it.substr(0, feat_pos).c_str());
-                    float feat_value = (float)atof(it.substr(feat_pos+1).c_str());
-                    if (feat_value != 0) {
-                        samp_feat.id_vec.push_back(feat_id);
-                        samp_feat.value_vec.push_back(feat_value);
-                    }
+            vector<int> tagIdVec;
+
+            if(sampling){
+                // Generate tag's id vector
+                auto it=tagVec.begin()+2;
+                for(it; (it+2)!=tagVec.end(); it++){
+                    tagIdVec.push_back(_tagset->GetIndex((*it).c_str()));
                 }
-                samp_feat_vec.push_back(samp_feat);
+                if(tagIdVec.size()!=featsVec.size()){
+                    cerr << "\nPretreatment ERROR" << endl;
+                    cerr << "On " << __FILE__ << ", line:" << __LINE__ << endl;
+                    cerr << "TagId vector's size not equal to feature vector's size!" <<endl;
+                    return false;
+                }
+                // cerr << numIndex <<endl;
+                // cerr <<"size:("<<tagIdVec.size()<<", "<<featsVec.size()<<')'<<endl;
+                vector<int> samplingResult;
+                NegativeSampling(tagIdVec, samplingResult);
+                // cerr <<"After sampling:"<<samplingResult.size()<<endl;
+                for(auto id : samplingResult){
+                    samp_class_vec.push_back(tagIdVec.at(id));
+                    feature samp_feat;
+                    for (auto it : featsVec.at(id)) {
+                        size_t feat_pos = it.find_first_of(":");
+                        int feat_id = atoi(it.substr(0, feat_pos).c_str());
+                        float feat_value = (float)atof(it.substr(feat_pos+1).c_str());
+                        if (feat_value != 0) {
+                            samp_feat.id_vec.push_back(feat_id);
+                            samp_feat.value_vec.push_back(feat_value);
+                        }
+                    }
+                    count++;
+                    samp_feat_vec.push_back(samp_feat);
+                }
+                // cerr << count <<endl<<endl;
+            }
+            else{
+                for (size_t i=0; i<featsVec.size(); i++) {
+                    samp_class_vec.push_back(_tagset->GetIndex(tagVec.at(i+2).c_str()));
+                    feature samp_feat;
+                    for (auto it : featsVec.at(i)) {
+                        size_t feat_pos = it.find_first_of(":");
+                        int feat_id = atoi(it.substr(0, feat_pos).c_str());
+                        float feat_value = (float)atof(it.substr(feat_pos+1).c_str());
+                        if (feat_value != 0) {
+                            samp_feat.id_vec.push_back(feat_id);
+                            samp_feat.value_vec.push_back(feat_value);
+                        }
+                    }
+                    count++;
+                    samp_feat_vec.push_back(samp_feat);
+                }
             }
         }
         std::cout << " 100.0000\%" << endl;
         fin.close();
         // outfile.close();
         std::cout << endl;
-        std::cout << numIndex << " samples in total." << endl;
+        std::cout << count << " samples in total." << endl;
         //outfile.clear();
         return true;
     }
@@ -359,6 +405,31 @@ namespace nerp {
                 }
             }
             featsVec.push_back(featVec);
+        }
+        return;
+    }
+
+    void Pretreatment::NegativeSampling(vector<int> tagIdVec, vector<int> &result){
+        result.clear();
+        int i = 0;
+        while(i<tagIdVec.size()){
+            if(tagIdVec.at(i) != 0){
+                int j = i;
+                while(j<tagIdVec.size() && tagIdVec.at(j) != 0) j++;
+                j--;
+                // cerr <<i<<','<<j<<' ';
+                for(int t = i-3;(t <= j+3) && (t<tagIdVec.size());t++){
+                    if(t>=0) result.push_back(t);
+                }
+                i = j + 1;
+            }
+            else{i++;}
+        }
+        // cerr << "Sampling finished.\n";
+        if(result.size() == 0){
+            for(i=0;i<tagIdVec.size();i+=2){
+                result.push_back(i);
+            }
         }
         return;
     }
