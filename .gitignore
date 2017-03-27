@@ -13,3 +13,6 @@ output_chs.*
 
 # docs
 doc/*
+
+# corpus
+corpus/
