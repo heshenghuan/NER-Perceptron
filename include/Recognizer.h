@@ -20,11 +20,10 @@
 #include "NERDict.h"
 #include "Probability.h"
 #include "MultiPerceptron.h"
-#include "NUSTM_CWSP.h"
 
 namespace nerp
 {
-    class Recognizer: //public NUSTM_CWSP
+    class Recognizer
     {
     public:
         Recognizer();
