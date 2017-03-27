@@ -12,6 +12,7 @@
 
 #pragma once
 #include "Config.h"
+#include "StrFun.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -61,7 +62,7 @@ namespace nerp
         void calc_loss(double *loss, float *acc);
         float calc_acc(vector<int> &test_class_vec, vector<int> &pred_class_vec);	
         float sigmoid(float x);
-        vector<string> string_split(string terms_str, string spliting_tag);
+        // vector<string> string_split(string terms_str, string spliting_tag);
     private:
        vector<feature> samp_feat_vec;    //sample list
        vector<int> samp_class_vec;       //vec of samples' class

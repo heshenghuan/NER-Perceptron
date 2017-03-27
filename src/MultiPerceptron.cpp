@@ -556,22 +556,22 @@ namespace nerp
 
 	}
 
-	vector<string> MultiPerceptron::string_split(string terms_str, string spliting_tag)
-	{
-		vector<string> feat_vec;
-	    size_t term_beg_pos = 0;
-    	size_t term_end_pos = 0;
-	    while ((term_end_pos = terms_str.find_first_of(spliting_tag, term_beg_pos)) != string::npos) {
-    	    if (term_end_pos > term_beg_pos) {
-        	    string term_str = terms_str.substr(term_beg_pos, term_end_pos - term_beg_pos);
-            	feat_vec.push_back(term_str);
-        	}
-        	term_beg_pos = term_end_pos + 1;
-    	}
-		if (term_beg_pos < terms_str.size()) {
-			string end_str = terms_str.substr(term_beg_pos);
-			feat_vec.push_back(end_str);
-		}
-    	return feat_vec;
-	}
+	// vector<string> MultiPerceptron::string_split(string terms_str, string spliting_tag)
+	// {
+	// 	vector<string> feat_vec;
+	//     size_t term_beg_pos = 0;
+    // 	size_t term_end_pos = 0;
+	//     while ((term_end_pos = terms_str.find_first_of(spliting_tag, term_beg_pos)) != string::npos) {
+    // 	    if (term_end_pos > term_beg_pos) {
+    //     	    string term_str = terms_str.substr(term_beg_pos, term_end_pos - term_beg_pos);
+    //         	feat_vec.push_back(term_str);
+    //     	}
+    //     	term_beg_pos = term_end_pos + 1;
+    // 	}
+	// 	if (term_beg_pos < terms_str.size()) {
+	// 		string end_str = terms_str.substr(term_beg_pos);
+	// 		feat_vec.push_back(end_str);
+	// 	}
+    // 	return feat_vec;
+	// }
 }
