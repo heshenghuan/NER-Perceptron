@@ -14,54 +14,6 @@
 
 namespace nerp
 {
-    int Tagset::GetAndInsertTagsIndics(char** tags, int* tids, int max)
-    {
-        int i;
-
-        for (i = 0; i < max && tags[i]!=0 && tags[i][0] != 0; i++) 
-        {
-            tids[i] = GetAndInsertIndex(tags[i]);
-        }
-        if( i< max )
-        {
-            tids[i]= Vocab_None ;
-        }
-        else
-            tids[max-1] = Vocab_None;
-        return i;
-    }
-
-    int Tagset::GetAndInsertTagsIndics(char** tags, vector<int> &tids, int max)
-    {
-        int i;
-        for (i = 0; i < max && tags[i]!=0 && tags[i][0] != 0; i++) 
-        {
-            tids.push_back( GetAndInsertIndex(tags[i]) );
-        }
-        tids.push_back( Vocab_None );
-        return i;
-    }
-
-    int Tagset::GetTagIndics(char** tags, int *tids, int max, int &UnkownNum)
-    {
-        int i;
-        UnkownNum = 0;
-
-        for (i = 0; i < max && tags[i]!=0 && tags[i][0] != 0; i++) 
-        {
-            tids[i] = GetIndex(tags[i]);
-            if( _ulUnKnow == tids[i] )
-                UnkownNum++;
-        }
-        if( i< max )
-        {
-            tids[i]= Vocab_None ;
-        }
-        else
-            tids[max-1] = Vocab_None;
-        return i;
-    }
-
     bool Tagset::SaveTagsetFile()
     {
         if(_TagsetSize == 0)
@@ -132,7 +84,7 @@ namespace nerp
     bool Tagset::WriteTagsetIndex(FILE * file)
     {
         map<string, int>::iterator iter;
-        for (iter = index_data.begin();iter != index_data.end();++iter)
+        for (iter = tag2index.begin();iter != tag2index.end();++iter)
         {
             string myTag = (*iter).first;
             int unit = (int)myTag.length();
@@ -147,7 +99,7 @@ namespace nerp
     bool Tagset::WriteTagsetText(FILE * file)
     {
         map<string, int>::iterator iter;
-        for (iter = index_data.begin(); iter != index_data.end(); ++iter)
+        for (iter = tag2index.begin(); iter != tag2index.end(); ++iter)
         {
             string myTag = (*iter).first + " " + toString((*iter).second) + '\n';
             fwrite(myTag.data(), myTag.length(), 1, file);

@@ -14,6 +14,7 @@
 #define TAGSET_H_
 
 #include "Config.h"
+#include "StrFun.h"
 
 namespace nerp
 {
@@ -21,7 +22,7 @@ namespace nerp
     {
     public:
         Tagset():_TagsetSize(0){}
-        ~Tagset();
+        // ~Tagset(){};
 
         // 查找或加入标注序号
         int GetAndInsertIndex(const char *tag)
@@ -63,10 +64,6 @@ namespace nerp
             return _TagsetSize;
         };
 
-        int GetAndInsertTagsIndics(char** tags, int *tids, int max);        //将词转化为词号或插入
-        int GetAndInsertTagsIndics(char** tags, vector<int> &tids, int max);
-        int GetTagIndics(char** tags, int *tids, int max, int &UnkownNum);    //将此转化为词号，并统计未知词的数量
-
         bool SaveTagsetFile();
         bool LoadTagsetFile(const char *TagsetFileName);
         bool ConvertToBinaryFile(const char* InputFileName, const char* OutputFileName);
@@ -89,3 +86,5 @@ namespace nerp
         map<int, string> index2tag;
     };
 }
+
+#endif
