@@ -16,7 +16,7 @@
 //     return new cwsp::Recognizer();
 // }
 
-namespace cwsp
+namespace nerp
 {
     Recognizer::Recognizer()
     {
