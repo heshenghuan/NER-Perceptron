@@ -38,7 +38,7 @@ using namespace std;
 namespace nerp
 {
     const string g_copyright = "\nnerp: Chinese Named Entity Recognition Toolkit used multi-perceptron.\nCopyright (C) 2017.";
-    const string g_version = "\nVersion: 0.0.1, Last update: 2017-03-09\n";
+    const string g_version = "\nVersion: 0.1.0, Last update: 2017-03-28\n";
 
     const string g_Model_Header = "#bin,model";
     const int g_Header_Len = (int)g_Model_Header.length();
