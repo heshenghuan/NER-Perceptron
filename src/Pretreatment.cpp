@@ -416,7 +416,7 @@ namespace nerp {
             if(tagIdVec.at(i) != 0){
                 int j = i;
                 while(j<tagIdVec.size() && tagIdVec.at(j) != 0) j++;
-                j--;
+                if ((j+1) != tagIdVec.size() || tagIdVec.at(j) == 0) j--;
                 // cerr <<i<<','<<j<<' ';
                 for(int t = i-3;(t <= j+3) && (t<tagIdVec.size());t++){
                     if(t>=0) result.push_back(t);
