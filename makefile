@@ -2,7 +2,7 @@ CXX ?= g++
 CFLAGS = -std=c++11 -Wall -O3 -fPIC
 OBJ = src/CharType.o src/StrFun.o src/Tagset.o src/NERDict.o src/NERFeat.o src/Vocabulary.o src/Probability.o src/Recognizer.o src/MultiPerceptron.o src/Pretreatment.o
 
-all: nerp_train nerp_seg convert
+all: nerp_train nerp_recog convert
 	rm -rf *.o *.a
 	cd src; rm -rf *.a *.o
 .PHONY: all
@@ -35,11 +35,11 @@ nerp_train: nerp_train.o $(OBJ)
 nerp_train.o: nerp_train.cpp
 	$(CXX) $(CFLAGS) -I./include -c nerp_train.cpp
 
-nerp_seg: nerp_seg.o $(OBJ)
-	$(CXX) $(CFLAGS) -o nerp_seg nerp_seg.o $(OBJ)
+nerp_recog: nerp_recog.o $(OBJ)
+	$(CXX) $(CFLAGS) -o nerp_recog nerp_recog.o $(OBJ)
 
-nerp_seg.o: nerp_seg.cpp
-	$(CXX) $(CFLAGS) -I./include -c nerp_seg.cpp
+nerp_recog.o: nerp_recog.cpp
+	$(CXX) $(CFLAGS) -I./include -c nerp_recog.cpp
 
 src/CharType.o: src/CharType.cpp
 	cd src; $(CXX) $(CFLAGS) -I../include -c CharType.cpp -o CharType.o
@@ -77,7 +77,7 @@ clean:
 	cd data; rm -rf train
 
 cleanall:
-	rm -rf nerp_train nerp_seg convert NUSTM_CWSP.so nerp.so
+	rm -rf nerp_train nerp_recog convert NUSTM_CWSP.so nerp.so
 	rm -rf *.o *.a
 	cd src; rm -f *.a *.o
 	cd data; rm -rf train
