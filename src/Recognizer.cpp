@@ -25,6 +25,9 @@ namespace nerp
         _dict = new NERDict;
         _char_type = new CharType;
         _mp = new MultiPerceptron;
+        _tagset = new Tagset;
+
+        is_tagset_ready = false;
     }
 
     Recognizer::~Recognizer()
@@ -48,10 +51,11 @@ namespace nerp
         string featfile = _datapath + "Feat";
         string probfile = _datapath + "Prob";
         string mpfile = _datapath + "Model";
-        return Initialize(is_char_bin, dictfile, featfile, probfile, mpfile);
+        string tagsetfile = _datapath + "Tagset";
+        return Initialize(is_char_bin, dictfile, featfile, probfile, tagsetfile, mpfile);
     }
 
-    bool Recognizer::Initialize(bool is_char_bin, string dictfile, string &featfile, string &probfile, string &mpfile)
+    bool Recognizer::Initialize(bool is_char_bin, string dictfile, string &featfile, string &probfile, string &tagsetfile, string &mpfile)
     {
         if(!_char_type->Initialize(is_char_bin))
         {
@@ -89,6 +93,16 @@ namespace nerp
         }
         std::cout<<"Loading NER Probability finished." <<endl;
 
+        if(!_tagset->LoadTagsetFile(tagsetfile.c_str()))
+        {
+            cerr << "\nRecognizer ERROR" << endl;
+            cerr << "Initialization failed!";
+            cerr << "Can not initialize the NER Tagset."<<endl;
+            return false;
+        }
+        std::cout<<"Loading NER Tagset finished." <<endl;
+        is_tagset_ready = true;
+
         if(!_mp->read_model(mpfile))
         {
             cerr << "\nRecognizer ERROR" << endl;
@@ -102,21 +116,7 @@ namespace nerp
 
     string Recognizer::GetTag(int index)
     {
-        string ans;
-        switch(index)
-        {
-        case 0:
-            ans = "B"; break;
-        case 1:
-            ans = "M"; break;
-        case 2:
-            ans = "E"; break;
-        case 3:
-            ans = "S"; break;
-        default:
-            ans = "S"; break;
-        }
-        return ans;
+        return _tagset->GetTag(index);
     }
 
     void Recognizer::ReadSentence(ifstream &fin, vector<string> &charVec) {
@@ -138,6 +138,7 @@ namespace nerp
             charVec.push_back(myTextLine);
             getline(fin, myTextLine);
             TrimLine(myTextLine);
+            // std::cout<<myTextLine << endl;
         }
 
         charVec.push_back("E_0");
@@ -177,6 +178,8 @@ namespace nerp
             int numIndex = 0;
             vector<string> charVec;
             std::cout << "Processing . . . ." << endl;
+            fout << "#Name Entity Recognition Perceptron" << endl;
+            fout << Length << endl;
             while (numIndex < Length) {
                 numIndex++;
                 if (numIndex%100 == 0) {
@@ -455,31 +458,8 @@ namespace nerp
         string word;
         for(size_t i=0;i<tagVec.size();i++)
         {
-            if(tagVec.at(i)=="S")
-            {
-                word = charVec.at(i+2);
-                // std::cout<<word<<endl;
-                line += " " + word;
-                word.clear();
-            }
-            else if(tagVec.at(i)=="B")
-            {
-                // std::cout<<"B\n";
-                word += charVec.at(i+2);
-            }
-            else if(tagVec.at(i)=="M")
-            {
-                // std::cout<<"M\n";
-                word += charVec.at(i+2);
-            }
-            else
-            {
-                // std::cout<<"E\n";
-                word += charVec.at(i+2);
-                line += " " + word;
-                word.clear();
-            }
-            // std::cout<<line<<endl;
+            word = charVec.at(i+2);
+            line += word + " " + tagVec.at(i) + '\n';
         }
         return;
     }
