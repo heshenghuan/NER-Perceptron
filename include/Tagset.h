@@ -56,7 +56,7 @@ namespace nerp
             if( index<_TagsetSize )
                 return index2tag[index].c_str();
             else
-                return "NULL";
+                return "O";
         };
 
         int size()
