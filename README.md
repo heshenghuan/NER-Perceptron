@@ -162,6 +162,9 @@ Tagset file is a text that record each tag and it's corresponding index.
 
 ## Change History
 
+- 2017-03-31 **version 0.1.1**
+  - NER-Perceptron convert program.
+
 - 2017-03-28 **version 0.1.0**
   - NER-Perceptron is basically functional.
 
